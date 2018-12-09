@@ -1,6 +1,6 @@
 'use strict';
 
-// Load the NPM Packages mysql & inquirer
+// Load the packages used in this exercise
 var mysql = require("mysql");
 var inquirer = require("inquirer");
 
@@ -24,8 +24,6 @@ var bAmazonDB_connection = mysql.createConnection(
     }
 );
 
-//if (process.stdout._handle) process.stdout._handle.setBlocking(true);  
-
 
 //connect 
 bAmazonDB_connection.connect(function (err) {
@@ -36,7 +34,6 @@ bAmazonDB_connection.connect(function (err) {
 
 
 });
-
 
 
 
@@ -60,13 +57,21 @@ function getCustomerOrder() {
         }
     ]
 
+    // Get the items for sale from the items_tbl 
     bAmazonDB_connection.query("SELECT * FROM items_tbl", function (err, resp) {
         if (err) throw err;
 
-
-
         //show items for sale
-        console.table(resp);
+        //console.table(resp);
+        console.log(resp.length);
+        console.log("| " + ("ITEM Id").padEnd(10, " ") + "| " + ("ITEM DESCRIPTION").padEnd(40, " ") + "| " + ("PRICE").padEnd(6, ' ') + " |");
+        console.log("|" + ("").padEnd(11, "=") + ("|").padEnd(42, "=") + ("|").padEnd(9, "=") +"|");
+        for (var i=0; i<resp.length; i++) {
+             var padded_id = ((resp[i].id).toString()).padEnd(10," ");
+             var padded_item_name = (resp[i].item_name).padEnd(40, " ");
+             var padded_price = ((resp[i].price).toString()).padEnd(6, " ");
+             console.log(`| ${padded_id}| ${padded_item_name}| $${padded_price}|`);
+         }
 
         // Create a "Prompt" with a series of questions.
         inquirer.prompt(questions).then(inquirerResponse => {
@@ -79,7 +84,7 @@ function getCustomerOrder() {
 
                 // update the database with the new qty for the item
                 var newQty = resp[inquirerResponse.itemId - 1].stock_qty - inquirerResponse.qty;
-                
+
                 bAmazonDB_connection.query(
                     "UPDATE items_tbl SET stock_qty=? WHERE id = ?", [newQty, inquirerResponse.itemId], function (error) {
                         if (error) throw error;
@@ -91,7 +96,7 @@ function getCustomerOrder() {
                             bAmazonDB_connection.end();
                         });
 
-                      }
+                    }
                 );
 
 
@@ -103,7 +108,7 @@ function getCustomerOrder() {
 
 
     });
-    
+
 }
 
 
